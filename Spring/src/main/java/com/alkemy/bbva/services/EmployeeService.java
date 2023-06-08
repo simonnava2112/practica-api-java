@@ -1,39 +1,56 @@
 package com.alkemy.bbva.services;
 
 import com.alkemy.bbva.domain.Employee;
+import com.alkemy.bbva.domain.Rol;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@Component
 public class EmployeeService {
-    private static final Set<Employee> employees = new HashSet<>();
+    private static Set<Employee> employees = new HashSet<>();
 
     public EmployeeService() {
         loadEmployees();
     }
 
-    public Set<Employee>  add(Employee e){
+    public Set<Employee> add(Employee e) {
         employees.add(e);
         return employees;
     }
 
-    public Set<Employee> getAll(){
+    public Employee get(int id) {
+        return employees.stream().filter(empleado -> empleado.getId() == id).findFirst().orElse(null);
+    }
+
+    public Set<Employee> getAll() {
+        return employees.stream().sorted(Comparator.comparingInt(Employee::getId)).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    public Set<Employee> delete(int id) {
+        employees.removeIf(employee -> employee.getId() == id);
         return employees;
     }
 
-    public Set<Employee> delete(int id){
-        employees.removeIf(employee -> employee.id() == id);
+    public Set<Employee> update(int id, Employee employee) throws Exception {
+        Employee employeeOld = employees.stream().filter(empleado -> empleado.getId() == id).findFirst().orElse(null);
+        if(Objects.isNull(employeeOld)) {
+            throw new Exception("No existe el usuario");
+        }
+
+        employees.remove(employeeOld);
+        employee.setId(id);
+        employees.add(employee);
         return employees;
     }
 
-    private void loadEmployees(){
-        employees.add(new Employee(1, "Juan Pérez", 50000.0));
-        employees.add(new Employee(2, "María García", 60000.0));
+    private void loadEmployees() {
+        employees.add(new Employee(1, "Juan Pérez", 50000.0, Rol.ADMINISTRADOR));
+        employees.add(new Employee(2, "María García", 60000.0, Rol.MODERADOR));
         employees.add(new Employee(3, "Luis Rodríguez", 55000.0));
         employees.add(new Employee(4, "Ana Fernández", 65000.0));
-        employees.add(new Employee(5, "Carlos Gómez", 70000.0));
+        employees.add(new Employee(5, "Carlos Gómez", 70000.0, Rol.ADMINISTRADOR));
         employees.add(new Employee(6, "Laura López", 52000.0));
         employees.add(new Employee(7, "Jorge González", 48000.0));
         employees.add(new Employee(8, "Valentina Martínez", 75000.0));
